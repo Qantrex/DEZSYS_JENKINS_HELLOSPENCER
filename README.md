@@ -21,8 +21,10 @@ docker exec <jenkins_container_name> cat /var/jenkins_home/secrets/initialAdminP
 ```
 
 Anschließend `http://localhost:8080` öffnen, Jenkins entsperren, die empfohlenen
-Plugins sowie **Docker** und **CloudBees Docker Build** installieren und einen
-Administrator anlegen.
+Plugins sowie **Docker Pipeline** (`docker-workflow`) installieren und einen
+Administrator anlegen. Das Plugin **Docker Pipeline** stellt den `agent { docker { ... } }`-
+Typ bereit, den der `Jenkinsfile` verwendet – ohne dieses Plugin schlägt die Pipeline
+mit `Invalid agent type "docker"` fehl.
 
 Falls im Jenkins-Container `docker --version` fehlschlägt, die Docker-CLI nachinstallieren:
 
@@ -59,6 +61,39 @@ pkill -f "python src/hello.py"
 
 # Jenkins-Container stoppen
 docker stop <jenkins_container_name>
+```
+
+---
+
+## Basistest (Start → Test → Stop)
+
+Manuelle Schritt-für-Schritt-Anleitung für den Basistest dieses Projekts (identisch
+mit dem Block in der zentralen [`instructions.md`](../instructions.md); automatisiert
+über `../run_all.sh`).
+
+```bash
+cd DEZSYS_JENKINS_HELLOSPENCER
+
+# --- Counter-Datei, die die App liest/schreibt ---
+[ -f count.txt ] || echo "0" > count.txt
+chmod 666 count.txt
+
+# --- TEST A: Unit-Test (kein Server nötig) ---
+python -m pytest tests/test_hello.py -v
+
+# --- App starten (Port 5556) ---
+python src/hello.py &        # läuft im Hintergrund
+sleep 3                      # kurz warten, bis sie oben ist
+
+# --- Smoke-Check ---
+curl http://localhost:5556/api/hello
+# -> {"message":"Hello Spencer","counter":N,"status":"success"}
+
+# --- TEST B: Live-API-Integrationstest (Server muss laufen) ---
+python tests/test_api.py
+
+# --- App stoppen ---
+pkill -f "python src/hello.py"
 ```
 
 ---

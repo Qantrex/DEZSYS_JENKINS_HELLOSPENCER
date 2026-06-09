@@ -13,7 +13,7 @@ pipeline {
         stage('Pre-Build Cleanup') {
             steps {
                 // Kill any existing Flask processes
-                sh 'pkill -f "python hello.py" || true'
+                sh 'pkill -f "python src/hello.py" || true'
             }
         }
         stage('Checkout') {
@@ -56,12 +56,6 @@ pipeline {
         stage('Test API') {
             steps {
                 sh 'python tests/test_api.py'
-            }
-        }
-        stage('Keep Alive') {
-            steps {
-                // Keep the container running indefinitely
-                sh 'sleep infinity'
             }
         }
     }
