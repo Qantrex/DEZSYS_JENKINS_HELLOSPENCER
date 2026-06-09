@@ -33,7 +33,7 @@ class TestHelloSpencer(unittest.TestCase):
         self.assertIn('status', data)
 
         # Test the actual values
-        self.assertEqual(data['message'], 'Hello Konstantin')
+        self.assertEqual(data['message'], 'Hello Spencer')
         self.assertEqual(data['status'], 'success')
 
 if __name__ == '__main__':
